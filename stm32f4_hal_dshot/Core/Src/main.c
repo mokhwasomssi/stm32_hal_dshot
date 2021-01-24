@@ -25,7 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -35,6 +35,13 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+#define MOTOR_BIT_0 		3
+#define MOTOR_BIT_1			6
+#define MOTOR_BIT_LENGTH	8
+
+#define DSHOT_DMA_BUFFER_SIZE 18  // 16bits : sigal, 2bits : frame reset
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -46,13 +53,50 @@
 
 /* USER CODE BEGIN PV */
 
-uint32_t duty_cycle[17] = {3, 6, 3, 6, 3, 6, 3, 6, 3, 6, 3, 6, 3, 6, 3, 3, 0};
+uint32_t dmaBufferT2CH1[DSHOT_DMA_BUFFER_SIZE] = {0,};
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+
+// align 16bit dshot signal : 11bits(command & throttle) + 1bit(telemetry request) + 4bits(checksum)
+// command : 0 - 47
+// throttle : 48 - 2047
+uint16_t prepareDshotPacket(uint16_t value, bool requestTelemetry) {
+
+  uint16_t packet = (value << 1) | (requestTelemetry ? 1 : 0);
+  requestTelemetry = false;    // reset telemetry request to make sure it's triggered only once in a row
+
+  // compute checksum
+  int csum = 0;
+  int csum_data = packet;
+  for (int i = 0; i < 3; i++) {
+    csum ^=  csum_data;   // xor data by nibbles
+    csum_data >>= 4;
+  }
+  csum &= 0xf;
+
+  // append checksum
+  packet = (packet << 4) | csum;
+
+  return packet;
+}
+
+// DEC packet -> BIN dshot single(pwm)
+static uint8_t loadDmaBufferDshot(uint32_t *dmaBuffer, int stride, uint16_t packet) 
+{
+    int i;
+    for (i = 0; i < 16; i++) {
+        dmaBuffer[i * stride] = (packet & 0x8000) ? MOTOR_BIT_1 : MOTOR_BIT_0;  // MSB first
+        packet <<= 1;
+    }
+    dmaBuffer[i++ * stride] = 0;
+    dmaBuffer[i++ * stride] = 0;
+
+    return DSHOT_DMA_BUFFER_SIZE;
+}
 
 /* USER CODE END PFP */
 
@@ -69,8 +113,8 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 
-
-	//uint32_t duty_cycle_2[5] = {3, 6, 3, 6, 0};
+  uint16_t packet1;
+  uint8_t bufferSize1;
 
   /* USER CODE END 1 */
 
@@ -102,6 +146,10 @@ int main(void)
   //HAL_TIM_PWM_Start_IT(&htim1, TIM_CHANNEL_1);
   //HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
   //HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, duty_cycle_2, 5);
+
+  packet1 = prepareDshotPacket(50, false);
+  bufferSize1 = loadDmaBufferDshot((uint32_t *)dmaBufferT2CH1, 1, packet1);
+
 
   /* USER CODE END 2 */
 
@@ -171,11 +219,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   // Check which version of the timer triggered this callback and toggle LED
   if (htim == &htim11)
   {
-	  HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, duty_cycle, 17);
+	  HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, dmaBufferT2CH1, 18);
 	  //HAL_TIM_PWM_Stop_DMA(&htim2, TIM_CHANNEL_1);
   }
 }
-
 
 /* USER CODE END 4 */
 
