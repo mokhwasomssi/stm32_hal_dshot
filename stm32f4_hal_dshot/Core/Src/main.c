@@ -46,6 +46,8 @@
 
 /* USER CODE BEGIN PV */
 
+uint32_t duty_cycle[17] = {3, 6, 3, 6, 3, 6, 3, 6, 3, 6, 3, 6, 3, 6, 3, 3, 0};
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -66,6 +68,9 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+
+
+	//uint32_t duty_cycle_2[5] = {3, 6, 3, 6, 0};
 
   /* USER CODE END 1 */
 
@@ -88,8 +93,15 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_TIM1_Init();
+  MX_TIM2_Init();
+  MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
+
+  HAL_TIM_Base_Start_IT(&htim11);
+
+  //HAL_TIM_PWM_Start_IT(&htim1, TIM_CHANNEL_1);
+  //HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+  //HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, duty_cycle_2, 5);
 
   /* USER CODE END 2 */
 
@@ -100,6 +112,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+	  //HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, duty_cycle, 17);
+
   }
   /* USER CODE END 3 */
 }
@@ -149,6 +164,18 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+// Callback: timer has rolled over
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  // Check which version of the timer triggered this callback and toggle LED
+  if (htim == &htim11)
+  {
+	  HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, duty_cycle, 17);
+	  //HAL_TIM_PWM_Stop_DMA(&htim2, TIM_CHANNEL_1);
+  }
+}
+
 
 /* USER CODE END 4 */
 
