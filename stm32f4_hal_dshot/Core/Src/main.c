@@ -40,7 +40,7 @@
 #define MOTOR_BIT_1			6
 #define MOTOR_BIT_LENGTH	8
 
-#define DSHOT_DMA_BUFFER_SIZE 18  // 16bits : sigal, 2bits : frame reset
+#define DSHOT_DMA_BUFFER_SIZE 18  // 0-15 : dshot frame,  16-17 : frame reset
 
 /* USER CODE END PD */
 
@@ -54,6 +54,11 @@
 /* USER CODE BEGIN PV */
 
 uint32_t dmaBufferT2CH1[DSHOT_DMA_BUFFER_SIZE] = {0,};
+uint16_t value = 0;
+
+uint16_t packet1;
+uint8_t bufferSize1;
+
 
 /* USER CODE END PV */
 
@@ -113,8 +118,6 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 
-  uint16_t packet1;
-  uint8_t bufferSize1;
 
   /* USER CODE END 1 */
 
@@ -147,8 +150,7 @@ int main(void)
   //HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
   //HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, duty_cycle_2, 5);
 
-  packet1 = prepareDshotPacket(50, false);
-  bufferSize1 = loadDmaBufferDshot((uint32_t *)dmaBufferT2CH1, 1, packet1);
+
 
 
   /* USER CODE END 2 */
@@ -213,14 +215,15 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 
-// Callback: timer has rolled over
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  // Check which version of the timer triggered this callback and toggle LED
   if (htim == &htim11)
   {
+	  packet1 = prepareDshotPacket(value, false);
+	  bufferSize1 = loadDmaBufferDshot((uint32_t *)dmaBufferT2CH1, 1, packet1);
+
 	  HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, dmaBufferT2CH1, 18);
-	  //HAL_TIM_PWM_Stop_DMA(&htim2, TIM_CHANNEL_1);
+
   }
 }
 
