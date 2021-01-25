@@ -17,7 +17,7 @@ __Send `dshot signal` using `DMA` and `PWM`__
 
 ### ESC Protocol
 ||Analogue signal|Digital signal|
-|:---:|:---:|:---:|:---:|
+|:---:|:---:|:---:|
 |ESC Protocol|PWM <br> Oneshot125 <br> Oneshot42 <br> Multishot|Dshot150 <br> Dshot300 <br> Dshot600 <br> Dshot 1200|
 
 
