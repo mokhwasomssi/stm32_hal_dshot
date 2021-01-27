@@ -1,7 +1,9 @@
-# stm32f4_hal_dshot
+# stm32f4_hal_dshot (incomplete)
 
-__Change speed of drone motor using `dshot protocol` and `BLHeli_32 ESC`__  
-__Send `dshot signal` using `DMA` and `PWM`__    
+__`Dshot signal` is sent using DMA and PWM from stm32 microcontroller__  
+__You can change speed of drone motor using `Dshot protocol` and `BLHeli_32 ESC`__  
+
+
 
 ## 0. Development environment  
 * IDE : [STM32Cubeide (STM32Cube HAL)](https://www.st.com/en/development-tools/stm32cubeide)
@@ -9,7 +11,9 @@ __Send `dshot signal` using `DMA` and `PWM`__
 * ESC : [HAKRC BLHeli_32 Bit 35A 2-5S ESC](https://www.aliexpress.com/item/33008402033.html?spm=a2g0s.9042311.0.0.f7794c4dYDQfbS)
 * Motor : [iFlight XING E 2207 2450KV](https://shop.iflight-rc.com/index.php?route=product/product&path=20_26_321&product_id=874)
 
-## 1. ESC Firmware and Protocol
+## 1. Feature
+
+## 2. ESC Firmware and Protocol
 ### ESC Firmware
 ||1st|2nd|3rd|
 |:---:|:---:|:---:|:---:|
@@ -21,7 +25,7 @@ __Send `dshot signal` using `DMA` and `PWM`__
 |ESC Protocol|PWM <br> Oneshot125 <br> Oneshot42 <br> Multishot|Dshot150 <br> Dshot300 <br> Dshot600 <br> Dshot 1200|
 
 
-## 2. Dshot
+## 3. Dshot
 
 ![image](https://user-images.githubusercontent.com/48342925/105716366-0f1e2680-5f62-11eb-8d5c-651e15907a53.png)  
 ### (1) Data Frame  
@@ -45,9 +49,55 @@ __Send `dshot signal` using `DMA` and `PWM`__
 |DShot1200|1,200,000 bits/s|0.83us|75000 frames/s|13.3us|
 
 
+## 4. User Configuration
 
-## 1. FEATURE
+### (1) STM32CubeMX
+* TIMx
+```
+- Mode
+    Channalx : PWM Generation CHx
 
+- Configuration
+    Parameter Settings
+        Counter Settings
+            Prescaler                   : 
+            Counter Mode                : Up
+            Counter Period              : 
+            Internal Clock Division     : No Division
+        Trigger Output Parameters
+            Master/Slave Mode           : Disable
+            Trigger Event Selection     : Reset
+        PWM Generation Channalx
+            Mode                        : PWM mode 1
+            Pulse                       : 
+            Output compare preload      : Enable
+            Fast Mode                   : Disable
+            CH Polarity                 : High
 
+```
 
-## 2. User Configuration
+* DMA
+```
+- configuration
+    DMAx
+        DMA Request : TIMx_CHx
+        Stream : DMAx Stream x
+        Direction : Memory To Peripheral
+        Priority : Low
+
+- DMA Request Settings
+    Mode : Normal
+
+    Use Fifo : Yes
+    Threshold : One Quarter Full
+
+    Peripheral
+        Increment Address : No
+        Data Width : Word
+        Burst Size : Single
+
+    Memory
+        Increment Address : Yes
+        Data Width : Word
+        Burst Size : Single  
+```

@@ -25,7 +25,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdbool.h>
+
+#include "dshot.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -36,11 +37,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define MOTOR_BIT_0 		3
-#define MOTOR_BIT_1			6
-#define MOTOR_BIT_LENGTH	8
 
-#define DSHOT_DMA_BUFFER_SIZE 18  // 0-15 : dshot frame,  16-17 : frame reset
 
 /* USER CODE END PD */
 
@@ -59,6 +56,7 @@ uint16_t value = 0;
 uint16_t packet1;
 uint8_t bufferSize1;
 
+//uint32_t timer_clock = SystemCoreClock;
 
 /* USER CODE END PV */
 
@@ -66,42 +64,6 @@ uint8_t bufferSize1;
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 
-// align 16bit dshot signal : 11bits(command & throttle) + 1bit(telemetry request) + 4bits(checksum)
-// command : 0 - 47
-// throttle : 48 - 2047
-uint16_t prepareDshotPacket(uint16_t value, bool requestTelemetry) {
-
-  uint16_t packet = (value << 1) | (requestTelemetry ? 1 : 0);
-  requestTelemetry = false;    // reset telemetry request to make sure it's triggered only once in a row
-
-  // compute checksum
-  int csum = 0;
-  int csum_data = packet;
-  for (int i = 0; i < 3; i++) {
-    csum ^=  csum_data;   // xor data by nibbles
-    csum_data >>= 4;
-  }
-  csum &= 0xf;
-
-  // append checksum
-  packet = (packet << 4) | csum;
-
-  return packet;
-}
-
-// DEC packet -> BIN dshot single(pwm)
-static uint8_t loadDmaBufferDshot(uint32_t *dmaBuffer, int stride, uint16_t packet) 
-{
-    int i;
-    for (i = 0; i < 16; i++) {
-        dmaBuffer[i * stride] = (packet & 0x8000) ? MOTOR_BIT_1 : MOTOR_BIT_0;  // MSB first
-        packet <<= 1;
-    }
-    dmaBuffer[i++ * stride] = 0;
-    dmaBuffer[i++ * stride] = 0;
-
-    return DSHOT_DMA_BUFFER_SIZE;
-}
 
 /* USER CODE END PFP */
 
@@ -144,13 +106,11 @@ int main(void)
   MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
 
-  HAL_TIM_Base_Start_IT(&htim11);
+  HAL_TIM_Base_Start_IT(&htim11); // timer interrupt 1kHz
 
-  //HAL_TIM_PWM_Start_IT(&htim1, TIM_CHANNEL_1);
-  //HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
-  //HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, duty_cycle_2, 5);
+  __HAL_TIM_SET_PRESCALER(htim2, 23);
 
-
+  //SystemCoreClock
 
 
   /* USER CODE END 2 */
@@ -163,7 +123,6 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	  //HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, duty_cycle, 17);
 
   }
   /* USER CODE END 3 */

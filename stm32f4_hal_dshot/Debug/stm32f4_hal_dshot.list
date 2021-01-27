@@ -27,23 +27,23 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 00000030  00000000  00000000  0002000c  2**0
                   CONTENTS, READONLY
- 12 .debug_info   0000993e  00000000  00000000  0002003c  2**0
+ 12 .debug_info   00009b29  00000000  00000000  0002003c  2**0
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_abbrev 0000193f  00000000  00000000  0002997a  2**0
+ 13 .debug_abbrev 00001a01  00000000  00000000  00029b65  2**0
                   CONTENTS, READONLY, DEBUGGING
- 14 .debug_aranges 00000a28  00000000  00000000  0002b2c0  2**3
+ 14 .debug_aranges 00000a50  00000000  00000000  0002b568  2**3
                   CONTENTS, READONLY, DEBUGGING
- 15 .debug_ranges 00000940  00000000  00000000  0002bce8  2**3
+ 15 .debug_ranges 00000958  00000000  00000000  0002bfb8  2**3
                   CONTENTS, READONLY, DEBUGGING
- 16 .debug_macro  00015709  00000000  00000000  0002c628  2**0
+ 16 .debug_macro  00015916  00000000  00000000  0002c910  2**0
                   CONTENTS, READONLY, DEBUGGING
- 17 .debug_line   0000830c  00000000  00000000  00041d31  2**0
+ 17 .debug_line   000089cd  00000000  00000000  00042226  2**0
                   CONTENTS, READONLY, DEBUGGING
- 18 .debug_str    000867e0  00000000  00000000  0004a03d  2**0
+ 18 .debug_str    000868e1  00000000  00000000  0004abf3  2**0
                   CONTENTS, READONLY, DEBUGGING
- 19 .comment      0000007b  00000000  00000000  000d081d  2**0
+ 19 .comment      0000007b  00000000  00000000  000d14d4  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00002900  00000000  00000000  000d0898  2**2
+ 20 .debug_frame  00002958  00000000  00000000  000d1550  2**2
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -398,257 +398,257 @@ void MX_DMA_Init(void)
  8000512:	bf00      	nop
  8000514:	40023800 	.word	0x40023800
 
-08000518 <MX_GPIO_Init>:
+08000518 <prepareDshotPacket>:
+}
+
+// align 16bit dshot signal : 11bits(command & throttle) + 1bit(telemetry request) + 4bits(checksum)
+// command : 0 - 47
+// throttle : 48 - 2047
+uint16_t prepareDshotPacket(uint16_t value, bool requestTelemetry) {
+ 8000518:	b480      	push	{r7}
+ 800051a:	b087      	sub	sp, #28
+ 800051c:	af00      	add	r7, sp, #0
+ 800051e:	4603      	mov	r3, r0
+ 8000520:	460a      	mov	r2, r1
+ 8000522:	80fb      	strh	r3, [r7, #6]
+ 8000524:	4613      	mov	r3, r2
+ 8000526:	717b      	strb	r3, [r7, #5]
+
+  uint16_t packet = (value << 1) | (requestTelemetry ? 1 : 0);
+ 8000528:	88fb      	ldrh	r3, [r7, #6]
+ 800052a:	005b      	lsls	r3, r3, #1
+ 800052c:	b21a      	sxth	r2, r3
+ 800052e:	797b      	ldrb	r3, [r7, #5]
+ 8000530:	b21b      	sxth	r3, r3
+ 8000532:	4313      	orrs	r3, r2
+ 8000534:	b21b      	sxth	r3, r3
+ 8000536:	817b      	strh	r3, [r7, #10]
+  requestTelemetry = false;    // reset telemetry request to make sure it's triggered only once in a row
+ 8000538:	2300      	movs	r3, #0
+ 800053a:	717b      	strb	r3, [r7, #5]
+
+  // compute checksum
+  int csum = 0;
+ 800053c:	2300      	movs	r3, #0
+ 800053e:	617b      	str	r3, [r7, #20]
+  int csum_data = packet;
+ 8000540:	897b      	ldrh	r3, [r7, #10]
+ 8000542:	613b      	str	r3, [r7, #16]
+  for (int i = 0; i < 3; i++) {
+ 8000544:	2300      	movs	r3, #0
+ 8000546:	60fb      	str	r3, [r7, #12]
+ 8000548:	e009      	b.n	800055e <prepareDshotPacket+0x46>
+    csum ^=  csum_data;   // xor data by nibbles
+ 800054a:	697a      	ldr	r2, [r7, #20]
+ 800054c:	693b      	ldr	r3, [r7, #16]
+ 800054e:	4053      	eors	r3, r2
+ 8000550:	617b      	str	r3, [r7, #20]
+    csum_data >>= 4;
+ 8000552:	693b      	ldr	r3, [r7, #16]
+ 8000554:	111b      	asrs	r3, r3, #4
+ 8000556:	613b      	str	r3, [r7, #16]
+  for (int i = 0; i < 3; i++) {
+ 8000558:	68fb      	ldr	r3, [r7, #12]
+ 800055a:	3301      	adds	r3, #1
+ 800055c:	60fb      	str	r3, [r7, #12]
+ 800055e:	68fb      	ldr	r3, [r7, #12]
+ 8000560:	2b02      	cmp	r3, #2
+ 8000562:	ddf2      	ble.n	800054a <prepareDshotPacket+0x32>
+  }
+  csum &= 0xf;
+ 8000564:	697b      	ldr	r3, [r7, #20]
+ 8000566:	f003 030f 	and.w	r3, r3, #15
+ 800056a:	617b      	str	r3, [r7, #20]
+
+  // append checksum
+  packet = (packet << 4) | csum;
+ 800056c:	897b      	ldrh	r3, [r7, #10]
+ 800056e:	011b      	lsls	r3, r3, #4
+ 8000570:	b21a      	sxth	r2, r3
+ 8000572:	697b      	ldr	r3, [r7, #20]
+ 8000574:	b21b      	sxth	r3, r3
+ 8000576:	4313      	orrs	r3, r2
+ 8000578:	b21b      	sxth	r3, r3
+ 800057a:	817b      	strh	r3, [r7, #10]
+
+  return packet;
+ 800057c:	897b      	ldrh	r3, [r7, #10]
+}
+ 800057e:	4618      	mov	r0, r3
+ 8000580:	371c      	adds	r7, #28
+ 8000582:	46bd      	mov	sp, r7
+ 8000584:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 8000588:	4770      	bx	lr
+
+0800058a <loadDmaBufferDshot>:
+
+// DEC packet -> BIN dshot single(pwm)
+uint8_t loadDmaBufferDshot(uint32_t *dmaBuffer, int stride, uint16_t packet)
+{
+ 800058a:	b480      	push	{r7}
+ 800058c:	b087      	sub	sp, #28
+ 800058e:	af00      	add	r7, sp, #0
+ 8000590:	60f8      	str	r0, [r7, #12]
+ 8000592:	60b9      	str	r1, [r7, #8]
+ 8000594:	4613      	mov	r3, r2
+ 8000596:	80fb      	strh	r3, [r7, #6]
+    int i;
+    for (i = 0; i < 16; i++) {
+ 8000598:	2300      	movs	r3, #0
+ 800059a:	617b      	str	r3, [r7, #20]
+ 800059c:	e014      	b.n	80005c8 <loadDmaBufferDshot+0x3e>
+        dmaBuffer[i * stride] = (packet & 0x8000) ? MOTOR_BIT_1 : MOTOR_BIT_0;  // MSB first
+ 800059e:	f9b7 3006 	ldrsh.w	r3, [r7, #6]
+ 80005a2:	2b00      	cmp	r3, #0
+ 80005a4:	da01      	bge.n	80005aa <loadDmaBufferDshot+0x20>
+ 80005a6:	220e      	movs	r2, #14
+ 80005a8:	e000      	b.n	80005ac <loadDmaBufferDshot+0x22>
+ 80005aa:	2207      	movs	r2, #7
+ 80005ac:	697b      	ldr	r3, [r7, #20]
+ 80005ae:	68b9      	ldr	r1, [r7, #8]
+ 80005b0:	fb01 f303 	mul.w	r3, r1, r3
+ 80005b4:	009b      	lsls	r3, r3, #2
+ 80005b6:	68f9      	ldr	r1, [r7, #12]
+ 80005b8:	440b      	add	r3, r1
+ 80005ba:	601a      	str	r2, [r3, #0]
+        packet <<= 1;
+ 80005bc:	88fb      	ldrh	r3, [r7, #6]
+ 80005be:	005b      	lsls	r3, r3, #1
+ 80005c0:	80fb      	strh	r3, [r7, #6]
+    for (i = 0; i < 16; i++) {
+ 80005c2:	697b      	ldr	r3, [r7, #20]
+ 80005c4:	3301      	adds	r3, #1
+ 80005c6:	617b      	str	r3, [r7, #20]
+ 80005c8:	697b      	ldr	r3, [r7, #20]
+ 80005ca:	2b0f      	cmp	r3, #15
+ 80005cc:	dde7      	ble.n	800059e <loadDmaBufferDshot+0x14>
+    }
+    dmaBuffer[i++ * stride] = 0;
+ 80005ce:	697b      	ldr	r3, [r7, #20]
+ 80005d0:	1c5a      	adds	r2, r3, #1
+ 80005d2:	617a      	str	r2, [r7, #20]
+ 80005d4:	68ba      	ldr	r2, [r7, #8]
+ 80005d6:	fb02 f303 	mul.w	r3, r2, r3
+ 80005da:	009b      	lsls	r3, r3, #2
+ 80005dc:	68fa      	ldr	r2, [r7, #12]
+ 80005de:	4413      	add	r3, r2
+ 80005e0:	2200      	movs	r2, #0
+ 80005e2:	601a      	str	r2, [r3, #0]
+    dmaBuffer[i++ * stride] = 0;
+ 80005e4:	697b      	ldr	r3, [r7, #20]
+ 80005e6:	1c5a      	adds	r2, r3, #1
+ 80005e8:	617a      	str	r2, [r7, #20]
+ 80005ea:	68ba      	ldr	r2, [r7, #8]
+ 80005ec:	fb02 f303 	mul.w	r3, r2, r3
+ 80005f0:	009b      	lsls	r3, r3, #2
+ 80005f2:	68fa      	ldr	r2, [r7, #12]
+ 80005f4:	4413      	add	r3, r2
+ 80005f6:	2200      	movs	r2, #0
+ 80005f8:	601a      	str	r2, [r3, #0]
+
+    return DSHOT_DMA_BUFFER_SIZE;
+ 80005fa:	2312      	movs	r3, #18
+}
+ 80005fc:	4618      	mov	r0, r3
+ 80005fe:	371c      	adds	r7, #28
+ 8000600:	46bd      	mov	sp, r7
+ 8000602:	f85d 7b04 	ldr.w	r7, [sp], #4
+ 8000606:	4770      	bx	lr
+
+08000608 <MX_GPIO_Init>:
         * Output
         * EVENT_OUT
         * EXTI
 */
 void MX_GPIO_Init(void)
 {
- 8000518:	b580      	push	{r7, lr}
- 800051a:	b088      	sub	sp, #32
- 800051c:	af00      	add	r7, sp, #0
+ 8000608:	b580      	push	{r7, lr}
+ 800060a:	b088      	sub	sp, #32
+ 800060c:	af00      	add	r7, sp, #0
 
   GPIO_InitTypeDef GPIO_InitStruct = {0};
- 800051e:	f107 030c 	add.w	r3, r7, #12
- 8000522:	2200      	movs	r2, #0
- 8000524:	601a      	str	r2, [r3, #0]
- 8000526:	605a      	str	r2, [r3, #4]
- 8000528:	609a      	str	r2, [r3, #8]
- 800052a:	60da      	str	r2, [r3, #12]
- 800052c:	611a      	str	r2, [r3, #16]
+ 800060e:	f107 030c 	add.w	r3, r7, #12
+ 8000612:	2200      	movs	r2, #0
+ 8000614:	601a      	str	r2, [r3, #0]
+ 8000616:	605a      	str	r2, [r3, #4]
+ 8000618:	609a      	str	r2, [r3, #8]
+ 800061a:	60da      	str	r2, [r3, #12]
+ 800061c:	611a      	str	r2, [r3, #16]
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
- 800052e:	2300      	movs	r3, #0
- 8000530:	60bb      	str	r3, [r7, #8]
- 8000532:	4b20      	ldr	r3, [pc, #128]	; (80005b4 <MX_GPIO_Init+0x9c>)
- 8000534:	6b1b      	ldr	r3, [r3, #48]	; 0x30
- 8000536:	4a1f      	ldr	r2, [pc, #124]	; (80005b4 <MX_GPIO_Init+0x9c>)
- 8000538:	f043 0304 	orr.w	r3, r3, #4
- 800053c:	6313      	str	r3, [r2, #48]	; 0x30
- 800053e:	4b1d      	ldr	r3, [pc, #116]	; (80005b4 <MX_GPIO_Init+0x9c>)
- 8000540:	6b1b      	ldr	r3, [r3, #48]	; 0x30
- 8000542:	f003 0304 	and.w	r3, r3, #4
- 8000546:	60bb      	str	r3, [r7, #8]
- 8000548:	68bb      	ldr	r3, [r7, #8]
+ 800061e:	2300      	movs	r3, #0
+ 8000620:	60bb      	str	r3, [r7, #8]
+ 8000622:	4b20      	ldr	r3, [pc, #128]	; (80006a4 <MX_GPIO_Init+0x9c>)
+ 8000624:	6b1b      	ldr	r3, [r3, #48]	; 0x30
+ 8000626:	4a1f      	ldr	r2, [pc, #124]	; (80006a4 <MX_GPIO_Init+0x9c>)
+ 8000628:	f043 0304 	orr.w	r3, r3, #4
+ 800062c:	6313      	str	r3, [r2, #48]	; 0x30
+ 800062e:	4b1d      	ldr	r3, [pc, #116]	; (80006a4 <MX_GPIO_Init+0x9c>)
+ 8000630:	6b1b      	ldr	r3, [r3, #48]	; 0x30
+ 8000632:	f003 0304 	and.w	r3, r3, #4
+ 8000636:	60bb      	str	r3, [r7, #8]
+ 8000638:	68bb      	ldr	r3, [r7, #8]
   __HAL_RCC_GPIOH_CLK_ENABLE();
- 800054a:	2300      	movs	r3, #0
- 800054c:	607b      	str	r3, [r7, #4]
- 800054e:	4b19      	ldr	r3, [pc, #100]	; (80005b4 <MX_GPIO_Init+0x9c>)
- 8000550:	6b1b      	ldr	r3, [r3, #48]	; 0x30
- 8000552:	4a18      	ldr	r2, [pc, #96]	; (80005b4 <MX_GPIO_Init+0x9c>)
- 8000554:	f043 0380 	orr.w	r3, r3, #128	; 0x80
- 8000558:	6313      	str	r3, [r2, #48]	; 0x30
- 800055a:	4b16      	ldr	r3, [pc, #88]	; (80005b4 <MX_GPIO_Init+0x9c>)
- 800055c:	6b1b      	ldr	r3, [r3, #48]	; 0x30
- 800055e:	f003 0380 	and.w	r3, r3, #128	; 0x80
- 8000562:	607b      	str	r3, [r7, #4]
- 8000564:	687b      	ldr	r3, [r7, #4]
+ 800063a:	2300      	movs	r3, #0
+ 800063c:	607b      	str	r3, [r7, #4]
+ 800063e:	4b19      	ldr	r3, [pc, #100]	; (80006a4 <MX_GPIO_Init+0x9c>)
+ 8000640:	6b1b      	ldr	r3, [r3, #48]	; 0x30
+ 8000642:	4a18      	ldr	r2, [pc, #96]	; (80006a4 <MX_GPIO_Init+0x9c>)
+ 8000644:	f043 0380 	orr.w	r3, r3, #128	; 0x80
+ 8000648:	6313      	str	r3, [r2, #48]	; 0x30
+ 800064a:	4b16      	ldr	r3, [pc, #88]	; (80006a4 <MX_GPIO_Init+0x9c>)
+ 800064c:	6b1b      	ldr	r3, [r3, #48]	; 0x30
+ 800064e:	f003 0380 	and.w	r3, r3, #128	; 0x80
+ 8000652:	607b      	str	r3, [r7, #4]
+ 8000654:	687b      	ldr	r3, [r7, #4]
   __HAL_RCC_GPIOA_CLK_ENABLE();
- 8000566:	2300      	movs	r3, #0
- 8000568:	603b      	str	r3, [r7, #0]
- 800056a:	4b12      	ldr	r3, [pc, #72]	; (80005b4 <MX_GPIO_Init+0x9c>)
- 800056c:	6b1b      	ldr	r3, [r3, #48]	; 0x30
- 800056e:	4a11      	ldr	r2, [pc, #68]	; (80005b4 <MX_GPIO_Init+0x9c>)
- 8000570:	f043 0301 	orr.w	r3, r3, #1
- 8000574:	6313      	str	r3, [r2, #48]	; 0x30
- 8000576:	4b0f      	ldr	r3, [pc, #60]	; (80005b4 <MX_GPIO_Init+0x9c>)
- 8000578:	6b1b      	ldr	r3, [r3, #48]	; 0x30
- 800057a:	f003 0301 	and.w	r3, r3, #1
- 800057e:	603b      	str	r3, [r7, #0]
- 8000580:	683b      	ldr	r3, [r7, #0]
+ 8000656:	2300      	movs	r3, #0
+ 8000658:	603b      	str	r3, [r7, #0]
+ 800065a:	4b12      	ldr	r3, [pc, #72]	; (80006a4 <MX_GPIO_Init+0x9c>)
+ 800065c:	6b1b      	ldr	r3, [r3, #48]	; 0x30
+ 800065e:	4a11      	ldr	r2, [pc, #68]	; (80006a4 <MX_GPIO_Init+0x9c>)
+ 8000660:	f043 0301 	orr.w	r3, r3, #1
+ 8000664:	6313      	str	r3, [r2, #48]	; 0x30
+ 8000666:	4b0f      	ldr	r3, [pc, #60]	; (80006a4 <MX_GPIO_Init+0x9c>)
+ 8000668:	6b1b      	ldr	r3, [r3, #48]	; 0x30
+ 800066a:	f003 0301 	and.w	r3, r3, #1
+ 800066e:	603b      	str	r3, [r7, #0]
+ 8000670:	683b      	ldr	r3, [r7, #0]
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin, GPIO_PIN_SET);
- 8000582:	2201      	movs	r2, #1
- 8000584:	f44f 5100 	mov.w	r1, #8192	; 0x2000
- 8000588:	480b      	ldr	r0, [pc, #44]	; (80005b8 <MX_GPIO_Init+0xa0>)
- 800058a:	f001 f993 	bl	80018b4 <HAL_GPIO_WritePin>
+ 8000672:	2201      	movs	r2, #1
+ 8000674:	f44f 5100 	mov.w	r1, #8192	; 0x2000
+ 8000678:	480b      	ldr	r0, [pc, #44]	; (80006a8 <MX_GPIO_Init+0xa0>)
+ 800067a:	f001 f91b 	bl	80018b4 <HAL_GPIO_WritePin>
 
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = DEBUG_LED_Pin;
- 800058e:	f44f 5300 	mov.w	r3, #8192	; 0x2000
- 8000592:	60fb      	str	r3, [r7, #12]
+ 800067e:	f44f 5300 	mov.w	r3, #8192	; 0x2000
+ 8000682:	60fb      	str	r3, [r7, #12]
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
- 8000594:	2301      	movs	r3, #1
- 8000596:	613b      	str	r3, [r7, #16]
+ 8000684:	2301      	movs	r3, #1
+ 8000686:	613b      	str	r3, [r7, #16]
   GPIO_InitStruct.Pull = GPIO_NOPULL;
- 8000598:	2300      	movs	r3, #0
- 800059a:	617b      	str	r3, [r7, #20]
+ 8000688:	2300      	movs	r3, #0
+ 800068a:	617b      	str	r3, [r7, #20]
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
- 800059c:	2300      	movs	r3, #0
- 800059e:	61bb      	str	r3, [r7, #24]
+ 800068c:	2300      	movs	r3, #0
+ 800068e:	61bb      	str	r3, [r7, #24]
   HAL_GPIO_Init(DEBUG_LED_GPIO_Port, &GPIO_InitStruct);
- 80005a0:	f107 030c 	add.w	r3, r7, #12
- 80005a4:	4619      	mov	r1, r3
- 80005a6:	4804      	ldr	r0, [pc, #16]	; (80005b8 <MX_GPIO_Init+0xa0>)
- 80005a8:	f001 f802 	bl	80015b0 <HAL_GPIO_Init>
+ 8000690:	f107 030c 	add.w	r3, r7, #12
+ 8000694:	4619      	mov	r1, r3
+ 8000696:	4804      	ldr	r0, [pc, #16]	; (80006a8 <MX_GPIO_Init+0xa0>)
+ 8000698:	f000 ff8a 	bl	80015b0 <HAL_GPIO_Init>
 
 }
- 80005ac:	bf00      	nop
- 80005ae:	3720      	adds	r7, #32
- 80005b0:	46bd      	mov	sp, r7
- 80005b2:	bd80      	pop	{r7, pc}
- 80005b4:	40023800 	.word	0x40023800
- 80005b8:	40020800 	.word	0x40020800
-
-080005bc <prepareDshotPacket>:
-/* USER CODE BEGIN PFP */
-
-// align 16bit dshot signal : 11bits(command & throttle) + 1bit(telemetry request) + 4bits(checksum)
-// command : 0 - 47
-// throttle : 48 - 2047
-uint16_t prepareDshotPacket(uint16_t value, bool requestTelemetry) {
- 80005bc:	b480      	push	{r7}
- 80005be:	b087      	sub	sp, #28
- 80005c0:	af00      	add	r7, sp, #0
- 80005c2:	4603      	mov	r3, r0
- 80005c4:	460a      	mov	r2, r1
- 80005c6:	80fb      	strh	r3, [r7, #6]
- 80005c8:	4613      	mov	r3, r2
- 80005ca:	717b      	strb	r3, [r7, #5]
-
-  uint16_t packet = (value << 1) | (requestTelemetry ? 1 : 0);
- 80005cc:	88fb      	ldrh	r3, [r7, #6]
- 80005ce:	005b      	lsls	r3, r3, #1
- 80005d0:	b21a      	sxth	r2, r3
- 80005d2:	797b      	ldrb	r3, [r7, #5]
- 80005d4:	b21b      	sxth	r3, r3
- 80005d6:	4313      	orrs	r3, r2
- 80005d8:	b21b      	sxth	r3, r3
- 80005da:	817b      	strh	r3, [r7, #10]
-  requestTelemetry = false;    // reset telemetry request to make sure it's triggered only once in a row
- 80005dc:	2300      	movs	r3, #0
- 80005de:	717b      	strb	r3, [r7, #5]
-
-  // compute checksum
-  int csum = 0;
- 80005e0:	2300      	movs	r3, #0
- 80005e2:	617b      	str	r3, [r7, #20]
-  int csum_data = packet;
- 80005e4:	897b      	ldrh	r3, [r7, #10]
- 80005e6:	613b      	str	r3, [r7, #16]
-  for (int i = 0; i < 3; i++) {
- 80005e8:	2300      	movs	r3, #0
- 80005ea:	60fb      	str	r3, [r7, #12]
- 80005ec:	e009      	b.n	8000602 <prepareDshotPacket+0x46>
-    csum ^=  csum_data;   // xor data by nibbles
- 80005ee:	697a      	ldr	r2, [r7, #20]
- 80005f0:	693b      	ldr	r3, [r7, #16]
- 80005f2:	4053      	eors	r3, r2
- 80005f4:	617b      	str	r3, [r7, #20]
-    csum_data >>= 4;
- 80005f6:	693b      	ldr	r3, [r7, #16]
- 80005f8:	111b      	asrs	r3, r3, #4
- 80005fa:	613b      	str	r3, [r7, #16]
-  for (int i = 0; i < 3; i++) {
- 80005fc:	68fb      	ldr	r3, [r7, #12]
- 80005fe:	3301      	adds	r3, #1
- 8000600:	60fb      	str	r3, [r7, #12]
- 8000602:	68fb      	ldr	r3, [r7, #12]
- 8000604:	2b02      	cmp	r3, #2
- 8000606:	ddf2      	ble.n	80005ee <prepareDshotPacket+0x32>
-  }
-  csum &= 0xf;
- 8000608:	697b      	ldr	r3, [r7, #20]
- 800060a:	f003 030f 	and.w	r3, r3, #15
- 800060e:	617b      	str	r3, [r7, #20]
-
-  // append checksum
-  packet = (packet << 4) | csum;
- 8000610:	897b      	ldrh	r3, [r7, #10]
- 8000612:	011b      	lsls	r3, r3, #4
- 8000614:	b21a      	sxth	r2, r3
- 8000616:	697b      	ldr	r3, [r7, #20]
- 8000618:	b21b      	sxth	r3, r3
- 800061a:	4313      	orrs	r3, r2
- 800061c:	b21b      	sxth	r3, r3
- 800061e:	817b      	strh	r3, [r7, #10]
-
-  return packet;
- 8000620:	897b      	ldrh	r3, [r7, #10]
-}
- 8000622:	4618      	mov	r0, r3
- 8000624:	371c      	adds	r7, #28
- 8000626:	46bd      	mov	sp, r7
- 8000628:	f85d 7b04 	ldr.w	r7, [sp], #4
- 800062c:	4770      	bx	lr
-
-0800062e <loadDmaBufferDshot>:
-
-// DEC packet -> BIN dshot single(pwm)
-static uint8_t loadDmaBufferDshot(uint32_t *dmaBuffer, int stride, uint16_t packet) 
-{
- 800062e:	b480      	push	{r7}
- 8000630:	b087      	sub	sp, #28
- 8000632:	af00      	add	r7, sp, #0
- 8000634:	60f8      	str	r0, [r7, #12]
- 8000636:	60b9      	str	r1, [r7, #8]
- 8000638:	4613      	mov	r3, r2
- 800063a:	80fb      	strh	r3, [r7, #6]
-    int i;
-    for (i = 0; i < 16; i++) {
- 800063c:	2300      	movs	r3, #0
- 800063e:	617b      	str	r3, [r7, #20]
- 8000640:	e014      	b.n	800066c <loadDmaBufferDshot+0x3e>
-        dmaBuffer[i * stride] = (packet & 0x8000) ? MOTOR_BIT_1 : MOTOR_BIT_0;  // MSB first
- 8000642:	f9b7 3006 	ldrsh.w	r3, [r7, #6]
- 8000646:	2b00      	cmp	r3, #0
- 8000648:	da01      	bge.n	800064e <loadDmaBufferDshot+0x20>
- 800064a:	2206      	movs	r2, #6
- 800064c:	e000      	b.n	8000650 <loadDmaBufferDshot+0x22>
- 800064e:	2203      	movs	r2, #3
- 8000650:	697b      	ldr	r3, [r7, #20]
- 8000652:	68b9      	ldr	r1, [r7, #8]
- 8000654:	fb01 f303 	mul.w	r3, r1, r3
- 8000658:	009b      	lsls	r3, r3, #2
- 800065a:	68f9      	ldr	r1, [r7, #12]
- 800065c:	440b      	add	r3, r1
- 800065e:	601a      	str	r2, [r3, #0]
-        packet <<= 1;
- 8000660:	88fb      	ldrh	r3, [r7, #6]
- 8000662:	005b      	lsls	r3, r3, #1
- 8000664:	80fb      	strh	r3, [r7, #6]
-    for (i = 0; i < 16; i++) {
- 8000666:	697b      	ldr	r3, [r7, #20]
- 8000668:	3301      	adds	r3, #1
- 800066a:	617b      	str	r3, [r7, #20]
- 800066c:	697b      	ldr	r3, [r7, #20]
- 800066e:	2b0f      	cmp	r3, #15
- 8000670:	dde7      	ble.n	8000642 <loadDmaBufferDshot+0x14>
-    }
-    dmaBuffer[i++ * stride] = 0;
- 8000672:	697b      	ldr	r3, [r7, #20]
- 8000674:	1c5a      	adds	r2, r3, #1
- 8000676:	617a      	str	r2, [r7, #20]
- 8000678:	68ba      	ldr	r2, [r7, #8]
- 800067a:	fb02 f303 	mul.w	r3, r2, r3
- 800067e:	009b      	lsls	r3, r3, #2
- 8000680:	68fa      	ldr	r2, [r7, #12]
- 8000682:	4413      	add	r3, r2
- 8000684:	2200      	movs	r2, #0
- 8000686:	601a      	str	r2, [r3, #0]
-    dmaBuffer[i++ * stride] = 0;
- 8000688:	697b      	ldr	r3, [r7, #20]
- 800068a:	1c5a      	adds	r2, r3, #1
- 800068c:	617a      	str	r2, [r7, #20]
- 800068e:	68ba      	ldr	r2, [r7, #8]
- 8000690:	fb02 f303 	mul.w	r3, r2, r3
- 8000694:	009b      	lsls	r3, r3, #2
- 8000696:	68fa      	ldr	r2, [r7, #12]
- 8000698:	4413      	add	r3, r2
- 800069a:	2200      	movs	r2, #0
- 800069c:	601a      	str	r2, [r3, #0]
-
-    return DSHOT_DMA_BUFFER_SIZE;
- 800069e:	2312      	movs	r3, #18
-}
- 80006a0:	4618      	mov	r0, r3
- 80006a2:	371c      	adds	r7, #28
- 80006a4:	46bd      	mov	sp, r7
- 80006a6:	f85d 7b04 	ldr.w	r7, [sp], #4
- 80006aa:	4770      	bx	lr
+ 800069c:	bf00      	nop
+ 800069e:	3720      	adds	r7, #32
+ 80006a0:	46bd      	mov	sp, r7
+ 80006a2:	bd80      	pop	{r7, pc}
+ 80006a4:	40023800 	.word	0x40023800
+ 80006a8:	40020800 	.word	0x40020800
 
 080006ac <main>:
 /**
@@ -679,7 +679,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
- 80006b8:	f7ff ff2e 	bl	8000518 <MX_GPIO_Init>
+ 80006b8:	f7ff ffa6 	bl	8000608 <MX_GPIO_Init>
   MX_DMA_Init();
  80006bc:	f7ff ff0c 	bl	80004d8 <MX_DMA_Init>
   MX_TIM2_Init();
@@ -688,7 +688,7 @@ int main(void)
  80006c4:	f000 f97a 	bl	80009bc <MX_TIM11_Init>
   /* USER CODE BEGIN 2 */
 
-  HAL_TIM_Base_Start_IT(&htim11);
+  HAL_TIM_Base_Start_IT(&htim11); // timer interrupt 1kHz
  80006c8:	4801      	ldr	r0, [pc, #4]	; (80006d0 <main+0x24>)
  80006ca:	f001 fd40 	bl	800214e <HAL_TIM_Base_Start_IT>
 
@@ -854,7 +854,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
  80007b6:	881b      	ldrh	r3, [r3, #0]
  80007b8:	2100      	movs	r1, #0
  80007ba:	4618      	mov	r0, r3
- 80007bc:	f7ff fefe 	bl	80005bc <prepareDshotPacket>
+ 80007bc:	f7ff feac 	bl	8000518 <prepareDshotPacket>
  80007c0:	4603      	mov	r3, r0
  80007c2:	461a      	mov	r2, r3
  80007c4:	4b0d      	ldr	r3, [pc, #52]	; (80007fc <HAL_TIM_PeriodElapsedCallback+0x58>)
@@ -865,7 +865,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
  80007cc:	461a      	mov	r2, r3
  80007ce:	2101      	movs	r1, #1
  80007d0:	480b      	ldr	r0, [pc, #44]	; (8000800 <HAL_TIM_PeriodElapsedCallback+0x5c>)
- 80007d2:	f7ff ff2c 	bl	800062e <loadDmaBufferDshot>
+ 80007d2:	f7ff feda 	bl	800058a <loadDmaBufferDshot>
  80007d6:	4603      	mov	r3, r0
  80007d8:	461a      	mov	r2, r3
  80007da:	4b0a      	ldr	r3, [pc, #40]	; (8000804 <HAL_TIM_PeriodElapsedCallback+0x60>)
