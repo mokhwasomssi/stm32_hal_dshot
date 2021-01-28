@@ -38,7 +38,6 @@
 /* USER CODE BEGIN PD */
 
 
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -50,13 +49,8 @@
 
 /* USER CODE BEGIN PV */
 
-uint32_t dmaBufferT2CH1[DSHOT_DMA_BUFFER_SIZE] = {0,};
+uint32_t motor1[DSHOT_FRAME_SIZE];
 uint16_t value = 0;
-
-uint16_t packet1;
-uint8_t bufferSize1;
-
-//uint32_t timer_clock = SystemCoreClock;
 
 /* USER CODE END PV */
 
@@ -69,6 +63,15 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  if (htim == &htim11)
+  {
+	  dshot600(motor1, value);
+	  HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, motor1, 18);
+  }
+}
 
 /* USER CODE END 0 */
 
@@ -108,10 +111,6 @@ int main(void)
 
   HAL_TIM_Base_Start_IT(&htim11); // timer interrupt 1kHz
 
-  __HAL_TIM_SET_PRESCALER(htim2, 23);
-
-  //SystemCoreClock
-
 
   /* USER CODE END 2 */
 
@@ -122,7 +121,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
 
   }
   /* USER CODE END 3 */
@@ -174,17 +172,7 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  if (htim == &htim11)
-  {
-	  packet1 = prepareDshotPacket(value, false);
-	  bufferSize1 = loadDmaBufferDshot((uint32_t *)dmaBufferT2CH1, 1, packet1);
 
-	  HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, dmaBufferT2CH1, 18);
-
-  }
-}
 
 /* USER CODE END 4 */
 

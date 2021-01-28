@@ -1,4 +1,1 @@
-dshot.c:12:6:dshot_init	4	static
-dshot.c:17:10:getDshotHz	16	static
-dshot.c:34:10:prepareDshotPacket	32	static
-dshot.c:55:9:loadDmaBufferDshot	32	static
+dshot.c:13:6:dshot600	40	static
