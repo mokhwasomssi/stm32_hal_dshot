@@ -50,7 +50,7 @@
 /* USER CODE BEGIN PV */
 
 uint32_t motor1[DSHOT_FRAME_SIZE];
-uint16_t value = 0;
+uint16_t value = 0;					// need to keep value = 0 for a while after power on
 
 /* USER CODE END PV */
 

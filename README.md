@@ -1,8 +1,7 @@
-# stm32f4_hal_dshot (incomplete)
+# stm32f4_hal_dshot
 
-__`Dshot signal` is sent from stm32 microcontroller using DMA and PWM__  
-__You can change speed of drone motor using `Dshot protocol` and `BLHeli_32 ESC`__  
-
+__You can change speed of drone motor using `Dshot protocol` and `BLHeli_32 ESC`__   
+__stm32f4 MCU makes `Dshot signal` using `DMA` and `PWM`__  
 
 
 ## 0. Development environment  
