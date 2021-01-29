@@ -27,7 +27,7 @@ __stm32f4 MCU makes `Dshot signal` using `DMA` and `PWM`__
 - Configuration
     Parameter Settings
         Counter Settings
-            Prescaler                   : 21-1
+            Prescaler                   : 8-1
             Counter Mode                : Up
             Counter Period              : 20
             Internal Clock Division     : No Division
