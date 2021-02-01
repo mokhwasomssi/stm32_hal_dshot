@@ -104,3 +104,11 @@ __stm32f4 MCU makes `Dshot signal` using `DMA` and `PWM`__
 |DShot300|300,000  bits/s|3.33us|18750 frames/s|53.3us|
 |DShot600|600,000 bits/s|1.67us|37500 frames/s|26.7us|
 |DShot1200|1,200,000 bits/s|0.83us|75000 frames/s|13.3us|
+
+## 5. Reference
+* https://github.com/betaflight/betaflight  
+* https://forum.arduino.cc/index.php?topic=624454.0  
+* https://www.rcgroups.com/forums/showthread.php?2756129-Dshot-testing-a-new-digital-parallel-ESC-throttle-signal  
+* https://blck.mn/2016/11/dshot-the-new-kid-on-the-block/  
+* https://youtu.be/X-1YMl6aO1g  
+* https://youtu.be/EQJgh-o-uHo
