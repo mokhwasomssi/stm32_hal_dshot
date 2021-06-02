@@ -50,7 +50,7 @@ __stm32f4 MCU makes `Dshot signal` using `DMA` and `PWM`__
         DMA Request : TIMx_CHx
         Stream : DMAx Stream x
         Direction : Memory To Peripheral
-        Priority : Low
+        Priority : High
 
 - DMA Request Settings
     Mode : Normal
