@@ -17,6 +17,16 @@ extern DMA_HandleTypeDef hdma_tim5_ch2;
 extern DMA_HandleTypeDef hdma_tim5_ch4_trig;
 
 
+/* variable */
+uint32_t motor1_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
+uint32_t motor2_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
+uint32_t motor3_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
+uint32_t motor4_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
+
+uint16_t motor_value[4]; // motor speed value
+
+
+/* function */
 static uint32_t dshot_choose_type(dshot_type_e dshot_type)
 {
 	switch (dshot_type)

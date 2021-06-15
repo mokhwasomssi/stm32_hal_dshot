@@ -68,15 +68,6 @@ typedef enum
 } dshot_type_e;
 
 
-/* variable */
-uint32_t motor1_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
-uint32_t motor2_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
-uint32_t motor3_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
-uint32_t motor4_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
-
-uint16_t motor_value[4]; // motor speed value
-
-
 /* functions */
 void dshot_init(dshot_type_e dshot_type);
 void dshot_write();
