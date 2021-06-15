@@ -45,8 +45,19 @@ __stm32 MCU makes `Dshot signal` using `PWM` and `DMA`__
 |:---:|:---:|:---:|
 |duty cycle|37.425%|74.850%|
 
+### (3) Transmission Time
+||bits / sec|sec / bit|sec / frame|  
+|:---:|:---:|:---:|:---:|  
+|Dshot150|150,000 bits/s|6.67us|106.7us|
+|Dshot300|300,000  bits/s|3.33us|53.3us|
+|Dshot600|600,000 bits/s|1.67us|26.7us|
 
 
+### (4) Example
+<img src = https://user-images.githubusercontent.com/48342925/122077706-ec1fe080-ce36-11eb-9f24-a70c651b41c5.jpg width = "50%" height = "50%">
+
+- throttle : 11 / telemetry request : no / checksum  
+- 0 0 0 0 0 0 0 1 0 1 1 / 0 / 0 1 1 1 
 
 ## 4. STM32CubeMX Configuration
 
