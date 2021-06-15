@@ -3,7 +3,8 @@
 __You can change speed of drone motor using `Dshot protocol` and `BLHeli_32 ESC`__   
 __stm32 MCU makes `Dshot signal` using `PWM` and `DMA`__  
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/KLO2bgV3Op8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+[![Video Label](https://user-images.githubusercontent.com/48342925/122101090-e3d39f80-ce4e-11eb-8edd-042559854eec.png)](https://youtu.be/KLO2bgV3Op8)
 
 
 ## 0. Development environment  
