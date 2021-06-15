@@ -11,6 +11,7 @@
 #include "dshot.h"
 
 
+/* extern */
 extern DMA_HandleTypeDef hdma_tim2_ch1;
 extern DMA_HandleTypeDef hdma_tim2_ch3_up;
 extern DMA_HandleTypeDef hdma_tim5_ch2;
@@ -26,7 +27,6 @@ uint32_t motor4_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
 uint16_t motor_value[4]; // motor speed value
 
 
-/* function */
 static uint32_t dshot_choose_type(dshot_type_e dshot_type)
 {
 	switch (dshot_type)
@@ -67,7 +67,7 @@ static void dshot_set_timer(dshot_type_e dshot_type)
 }
 
 
-// But __HAL_TIM_DISABLE_DMA is needed to Eliminate the delay between the signals
+// __HAL_TIM_DISABLE_DMA is needed to Eliminate the delay between the dshot signals sent by dma
 // I don't know why :(
 static void dshot_dma_tc_callback(DMA_HandleTypeDef *hdma)
 {
@@ -75,19 +75,19 @@ static void dshot_dma_tc_callback(DMA_HandleTypeDef *hdma)
 
 	if (hdma == htim->hdma[TIM_DMA_ID_CC1])
 	{
-		//__HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC1);
+		__HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC1);
 	}
 	else if(hdma == htim->hdma[TIM_DMA_ID_CC2])
 	{
-		//__HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC2);
+		__HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC2);
 	}
 	else if(hdma == htim->hdma[TIM_DMA_ID_CC3])
 	{
-		//__HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC3);
+		__HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC3);
 	}
 	else if(hdma == htim->hdma[TIM_DMA_ID_CC4])
 	{
-		//__HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC4);
+		__HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC4);
 	}
 }
 
@@ -152,6 +152,7 @@ static uint16_t dshot_prepare_packet(uint16_t value)
 	return packet;
 }
 
+
 // Convert 16 bits packet to 16 pwm signal sent to dma
 static void dshot_prepare_dmabuffer(uint32_t* motor_dmabuffer, uint16_t value)
 {
@@ -192,33 +193,6 @@ static void dshot_dma_start(TIM_HandleTypeDef *htim, uint32_t channel, uint32_t 
 }
 
 
-static void dshot_dma_stop(TIM_HandleTypeDef *htim, uint32_t Channel)
-{
-    switch (Channel) 
-	{
-		case TIM_CHANNEL_1:
-			HAL_DMA_Abort(htim->hdma[TIM_DMA_ID_CC1]);
-			__HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC1);
-			break;
-
-		case TIM_CHANNEL_2:
-			HAL_DMA_Abort(htim->hdma[TIM_DMA_ID_CC2]);
-			__HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC2);
-			break;
-
-		case TIM_CHANNEL_3:
-			HAL_DMA_Abort(htim->hdma[TIM_DMA_ID_CC3]);
-			__HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC3);
-			break;
-
-		case TIM_CHANNEL_4:
-			HAL_DMA_Abort(htim->hdma[TIM_DMA_ID_CC4]);
-			__HAL_TIM_DISABLE_DMA(htim, TIM_DMA_CC4);
-			break;
-    }
-}
-
-
 static void dshot_enable_dma_request()
 {
 	// TIM_DMA_CCx depends on timer channel
@@ -236,11 +210,6 @@ void dshot_write()
 	dshot_prepare_dmabuffer(motor3_dmabuffer, motor_value[2]);
 	dshot_prepare_dmabuffer(motor4_dmabuffer, motor_value[3]);
 
-	__HAL_TIM_DISABLE_DMA(MOTOR_1_TIM, TIM_DMA_CC4);
-	__HAL_TIM_DISABLE_DMA(MOTOR_2_TIM, TIM_DMA_CC3);
-	__HAL_TIM_DISABLE_DMA(MOTOR_3_TIM, TIM_DMA_CC1);
-	__HAL_TIM_DISABLE_DMA(MOTOR_4_TIM, TIM_DMA_CC2);
-
 	dshot_dma_start(MOTOR_1_TIM, MOTOR_1_TIM_CHANNEL, motor1_dmabuffer, 18);
 	dshot_dma_start(MOTOR_2_TIM, MOTOR_2_TIM_CHANNEL, motor2_dmabuffer, 18);
 	dshot_dma_start(MOTOR_3_TIM, MOTOR_3_TIM_CHANNEL, motor3_dmabuffer, 18);
@@ -248,4 +217,3 @@ void dshot_write()
 
 	dshot_enable_dma_request();
 }
-

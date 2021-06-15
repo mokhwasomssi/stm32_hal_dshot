@@ -1,10 +1,8 @@
 /*
  * dshot.h
  *
- *
  *  Created on: 2021. 1. 27.
  *      Author: mokhwasomssi
- * 
  */
 
 
