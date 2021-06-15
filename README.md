@@ -62,10 +62,17 @@ __stm32 MCU makes `Dshot signal` using `PWM` and `DMA`__
 - throttle : 11 / telemetry request : no / checksum  
 - 0 0 0 0 0 0 0 1 0 1 1 / 0 / 0 1 1 1 
 
-## 4. STM32CubeMX Configuration
 
-### TIM
-- Presacelr and Counter Period is set in code
+## 4. Peripheral setting
+
+- motor 1 : tim5 channel 4, DMA1 Stream 3
+- motor 2 : tim2 channel 3, DMA1 Stream 1
+- motor 3 : tim2 channel 1, DMA1 Stream 5 
+- motor 4 : tim5 channel 2, DMA1 Stream 4
+
+### STM32CubeMX Configuration
+- TIM
+    - Presacelr and Counter Period is set in code
 ```
 - Mode
     Channalx : PWM Generation CHx
@@ -91,7 +98,7 @@ __stm32 MCU makes `Dshot signal` using `PWM` and `DMA`__
 
 ```
 
-### DMA
+- DMA
 ```
 - configuration
     DMAx
@@ -117,11 +124,10 @@ __stm32 MCU makes `Dshot signal` using `PWM` and `DMA`__
         Burst Size : Single  
 ```
 
-## How to Use
+## 5. How to Use
 
 ### Precaution
 - This code is fit for my peripheral setting
-- Peripheral setting is not controlled by parameter
 
 ### main.c example
 - Only write dshot code
