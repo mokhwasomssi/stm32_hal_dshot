@@ -114,3 +114,37 @@ __MCU makes `Dshot signal` using `PWM` and `DMA`__
 - DMA
 
 ![image](https://user-images.githubusercontent.com/48342925/124618725-fde32980-deb2-11eb-842a-e863431dd1b8.png)
+
+
+## 6. main.c
+
+#### stm32f411_fw_dshot\Core\Src\main.c
+
+```c
+#include "dshot.h"
+
+
+// variable from dshot.c
+extern uint16_t motor_value[4]; 
+
+
+// 1KHz timer interrupt
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) 
+{
+	dshot_write();
+
+	// Maintain 0 throttle until ESC is ready
+	// Power on 3 beeps - Arm start 1 low beep - Arm end 1 high beep - ESC ready
+	// Now, you can change throttle
+}
+
+
+int main (void)
+{
+    // Choose Dshot150/300/600 and Initailize
+    dshot_init(DSHOT600);
+
+    // 1KHz timer interrupt start
+    HAL_TIM_Base_Start_IT(&htim11); 
+}
+```
