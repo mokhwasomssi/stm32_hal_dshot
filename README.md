@@ -8,7 +8,7 @@ STM32 MCU makes Dshot signal using PWM and DMA
 
 __KEYWORD__ - `DSHOT` `BLHeli_32 ESC` `BLDC` `STM32 HAL` `TIMER` `PWM` `DMA`
 
-[![Video Label](https://user-images.githubusercontent.com/48342925/122101090-e3d39f80-ce4e-11eb-8edd-042559854eec.png)](https://youtu.be/KLO2bgV3Op8)
+![dshot](https://user-images.githubusercontent.com/48342925/130811044-cabbd6df-1b0b-4482-be93-9c13b84f68b6.gif)
 
 
 ## Dev Environment  
@@ -16,14 +16,12 @@ __KEYWORD__ - `DSHOT` `BLHeli_32 ESC` `BLDC` `STM32 HAL` `TIMER` `PWM` `DMA`
 - STM32 HAL driver
 - STM32F411
 - BLHeli_32 ESC
-- DRONE BLDC
+- Drone BLDC
 
 
 ## Library Features
 * Change motor throttle
-* Throttle range : 2000 steps
-    - 0 - 0%
-    - 2000 - 100%
+    * Throttle range : 2000 steps (0% - 100%)
 * Choose Dshot 150/300/600
 * Other command : no
 * Telemetry : no
@@ -71,11 +69,11 @@ __KEYWORD__ - `DSHOT` `BLHeli_32 ESC` `BLDC` `STM32 HAL` `TIMER` `PWM` `DMA`
 - 0 0 0 0 0 0 0 1 0 1 1 / 0 / 0 1 1 1 
 
 ### 5. Arming sequence
-### After power on, Send zero throttle for a while until 1 high beep is ended.
+- After power on, Send zero throttle for a while until 1 high beep is ended.  
+- _7p of BLHeli_32 manual ARM Rev32.x.pdf_
+<img src = https://user-images.githubusercontent.com/48342925/124644199-f466bb00-decc-11eb-8dc9-396d9b9706d7.png width = "70%" height = "70%">      
 
-<img src = https://user-images.githubusercontent.com/48342925/124644199-f466bb00-decc-11eb-8dc9-396d9b9706d7.png width = "70%" height = "70%">  
 
-(_7p of BLHeli_32 manual ARM Rev32.x.pdf_)
 
 
 ## STM32CubeMX
