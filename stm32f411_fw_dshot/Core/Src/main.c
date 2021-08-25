@@ -48,7 +48,7 @@
 
 /* USER CODE BEGIN PV */
 
-uint16_t my_motor_value[4] = {100, 100, 100, 100}; // variable from dshot.c
+uint16_t my_motor_value[4] = {0, 0, 0, 0};
 
 /* USER CODE END PV */
 
@@ -61,15 +61,6 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // 1KHz timer interrupt
-{
-	dshot_write(my_motor_value);
-
-	// Maintain 0 throttle until ESC is ready
-	// Power on 3 beeps - Arm start 1 low beep - Arm end 1 high beep - ESC ready
-	// Now, you can change throttle
-}
 
 /* USER CODE END 0 */
 
@@ -104,12 +95,9 @@ int main(void)
   MX_DMA_Init();
   MX_TIM2_Init();
   MX_TIM5_Init();
-  MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
 
   dshot_init(DSHOT600);
-
-  HAL_TIM_Base_Start_IT(&htim11); // 1KHz timer interrupt start
 
   /* USER CODE END 2 */
 
@@ -120,6 +108,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+	  dshot_write(my_motor_value);
+	  HAL_Delay(1);
   }
   /* USER CODE END 3 */
 }
