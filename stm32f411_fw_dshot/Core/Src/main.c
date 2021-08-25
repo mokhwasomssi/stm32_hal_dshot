@@ -48,7 +48,7 @@
 
 /* USER CODE BEGIN PV */
 
-extern uint16_t motor_value[4]; // variable from dshot.c
+uint16_t my_motor_value[4] = {100, 100, 100, 100}; // variable from dshot.c
 
 /* USER CODE END PV */
 
@@ -64,7 +64,7 @@ void SystemClock_Config(void);
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // 1KHz timer interrupt
 {
-	dshot_write();
+	dshot_write(my_motor_value);
 
 	// Maintain 0 throttle until ESC is ready
 	// Power on 3 beeps - Arm start 1 low beep - Arm end 1 high beep - ESC ready

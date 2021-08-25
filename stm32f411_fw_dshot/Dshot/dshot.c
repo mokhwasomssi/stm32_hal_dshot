@@ -8,22 +8,17 @@
  */
 
 
-/* Includes */
 #include "dshot.h"
 
 
-/* Dshot variables */
-
-uint32_t motor1_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
-uint32_t motor2_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
-uint32_t motor3_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
-uint32_t motor4_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
-
-uint16_t motor_value[4]; // motor speed value
+/* Variables */
+static uint32_t motor1_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
+static uint32_t motor2_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
+static uint32_t motor3_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
+static uint32_t motor4_dmabuffer[DSHOT_DMA_BUFFER_SIZE];
 
 
-/* Dshot static function prototype */
-
+/* Static functions */
 // dshot init
 static uint32_t dshot_choose_type(dshot_type_e dshot_type);
 static void dshot_set_timer(dshot_type_e dshot_type);
@@ -39,30 +34,23 @@ static void dshot_dma_start();
 static void dshot_enable_dma_request();
 
 
-/* Dshot global function */
-
+/* Functions */
 void dshot_init(dshot_type_e dshot_type)
 {
 	dshot_set_timer(dshot_type);
-
 	dshot_put_tc_callback_function();
-
 	dshot_start_pwm();
 }
 
-
-void dshot_write()
+void dshot_write(uint16_t* motor_value)
 {
-	dshot_prepare_dmabuffer_all();
-
+	dshot_prepare_dmabuffer_all(motor_value);
 	dshot_dma_start();
-
 	dshot_enable_dma_request();
 }
 
 
-/* Dshot static function definition */
-
+/* Static functions */
 static uint32_t dshot_choose_type(dshot_type_e dshot_type)
 {
 	switch (dshot_type)
@@ -82,9 +70,9 @@ static uint32_t dshot_choose_type(dshot_type_e dshot_type)
 static void dshot_set_timer(dshot_type_e dshot_type)
 {
 	uint16_t dshot_prescaler;
-	uint32_t timer_clock = TIMER_CLOCK; // all timer clock is same as SystemCoreClock in stm32f411ceu6
+	uint32_t timer_clock = TIMER_CLOCK; // all timer clock is same as SystemCoreClock in stm32f411
 
-	// Calculate prescaler that fits dshot type
+	// Calculate prescaler by dshot type
 	dshot_prescaler = lrintf((float) timer_clock / dshot_choose_type(dshot_type) + 0.01f) - 1;
 
 	// motor1
@@ -147,7 +135,6 @@ static void dshot_start_pwm()
 	HAL_TIM_PWM_Start(MOTOR_4_TIM, MOTOR_4_TIM_CHANNEL);
 }
 
-
 static uint16_t dshot_prepare_packet(uint16_t value)
 {
 	uint16_t packet;
@@ -187,7 +174,7 @@ static void dshot_prepare_dmabuffer(uint32_t* motor_dmabuffer, uint16_t value)
 	motor_dmabuffer[17] = 0;
 }
 
-static void dshot_prepare_dmabuffer_all()
+static void dshot_prepare_dmabuffer_all(uint16_t* motor_value)
 {
 	dshot_prepare_dmabuffer(motor1_dmabuffer, motor_value[0]);
 	dshot_prepare_dmabuffer(motor2_dmabuffer, motor_value[1]);
